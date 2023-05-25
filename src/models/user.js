@@ -1,5 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
+const bcrypt = require("bcrypt");
+
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -34,5 +36,23 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "User",
     }
   );
+  User.beforeCreate((user) => {
+    const saltRounds = 10;
+    bcrypt.genSalt(saltRounds, function (err, salt) {
+      //async way of encrypting password
+      if (err) throw "Error in salt generation";
+      bcrypt.hash(user.password, salt, function (err, hash) {
+        if (err) throw "Error in hash generation";
+        user.password = hash;
+        user.save();
+      });
+    });
+    //sync way of encrpyting password
+    // const salt = bcrypt.genSaltSync(saltRounds);
+    // const hash = bcrypt.hashSync(user.password, salt);
+    // user.passwrod = hash;
+
+    //Note : async way is better than sync
+  });
   return User;
 };
