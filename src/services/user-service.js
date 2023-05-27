@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 
 const UserRepository = require("../repository/user-repository");
 const { JWT_KEY } = require("../config/serverConfig");
+const { Role } = require("../models/index");
 
 class UserService {
   constructor() {
@@ -69,6 +70,21 @@ class UserService {
         throw { error: "No user with corresponding token exists" };
       }
       return user.id;
+    } catch (error) {
+      console.log("Something went wrong");
+      throw error;
+    }
+  }
+
+  async isAdmin(userId) {
+    try {
+      const user = await this.userRepository.getById(userId);
+      const adminRole = await Role.findOne({
+        where: {
+          name: "ADMIN",
+        },
+      });
+      return user.hasRole(adminRole);
     } catch (error) {
       console.log("Something went wrong");
       throw error;
